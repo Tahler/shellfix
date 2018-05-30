@@ -7,4 +7,4 @@ Quote Bash expressions according to the
 ## Running
 
 1. Install [Shellcheck](https://github.com/koalaman/shellcheck#installing).
-1. Run `find . -name '*.sh' | xargs ./fixer.py`.
+1. Run `find . -name '*.sh' | xargs ./main.py`.
