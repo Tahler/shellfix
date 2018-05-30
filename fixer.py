@@ -57,7 +57,7 @@ def quote_words_at_columns(line: str, cols: List[int]) -> str:
 
 def rewrite_file_with_quotes(path: str, errs: Dict[int, List[int]]):
     line_col_map = dict(errs)
-    with fileinput.input(files=(path, ), inplace=True, backup='.bak') as f:
+    with fileinput.input(files=(path, ), inplace=True) as f:
         for i, line in enumerate(f):
             line_num = i + 1
             if line_num in line_col_map:
