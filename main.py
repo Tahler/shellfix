@@ -67,9 +67,10 @@ def rewrite_file_with_quotes(path: str, errs: Dict[int, List[int]]):
 
 
 def main():
-    path = sys.argv[1]
-    errs = get_sc2086_locations(path)
-    rewrite_file_with_quotes(path, errs)
+    paths = sys.argv[1:]
+    for path in paths:
+        errs = get_sc2086_locations(path)
+        rewrite_file_with_quotes(path, errs)
 
 
 if __name__ == '__main__':
