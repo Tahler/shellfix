@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 
 import fileinput
+import logging
 import os
 import json
 import re
 import subprocess
 import sys
 from typing import Dict, Iterable, List, Tuple
+
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 
 def run_shellcheck(path: str) -> List[Dict]:
@@ -30,6 +33,17 @@ def get_sc2086_locations(path: str) -> Dict[int, List[int]]:
     return line_to_cols
 
 
+def log_line_cols(line: str, zero_based_cols: List[int]):
+    if logging.getLogger().isEnabledFor(logging.DEBUG):
+        col_points = ''
+        last_point = 0
+        for col in zero_based_cols:
+            spaces = ' ' * (col - last_point)
+            col_points += spaces + '^'
+            last_point = col + 1
+        logging.debug('Quoting words:\n%s%s', line, col_points)
+
+
 def quote_words_at_columns(line: str, cols: List[int]) -> str:
     """Returns the line with the word at col surrounded by double quotes.
 
@@ -38,15 +52,17 @@ def quote_words_at_columns(line: str, cols: List[int]) -> str:
         col: 1-based column numbers of the starts of the words.
     """
     zero_based_cols = [col - 1 for col in cols]
-
+    log_line_cols(line, zero_based_cols)
     new_line = ''
     remaining = line[:]
     for col in zero_based_cols:
         before_col = remaining[:col]
         after_col = remaining[col:]
+        logging.debug('Inserting at col %s', col)
+        logging.debug('before_col: "%s"', before_col)
+        logging.debug('after_col: "%s"', after_col)
 
-        next_space_index = re.search(r'\s', after_col).start()
-        word = after_col[:next_space_index]
+        logging.debug('word: "%s"', word)
         quoted_word = '"{}"'.format(word)
         new_line += before_col + quoted_word
 
@@ -66,10 +82,21 @@ def rewrite_file_with_quotes(path: str, errs: Dict[int, List[int]]):
             print(line, end='')
 
 
+def log_sc2086_errors(errs: Dict[int, List[int]]):
+    if errs and logging.getLogger().isEnabledFor(logging.INFO):
+        tuples = []
+        for line, cols in errs.items():
+            for col in cols:
+                tuples.append((line, col))
+        logging.info('Found SC2086 errors at %s', tuples)
+
+
 def main():
     paths = sys.argv[1:]
     for path in paths:
+        logging.info('Checking %s', path)
         errs = get_sc2086_locations(path)
+        log_sc2086_errors(errs)
         rewrite_file_with_quotes(path, errs)
 
 
