@@ -3,6 +3,7 @@
 import fileinput
 import logging
 import os
+import itertools
 import json
 import re
 import subprocess
@@ -11,7 +12,7 @@ from typing import Dict, Iterable, List, Tuple
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
-WORD_BOUNDS = re.compile(r'[^${}\w_/.]')
+WORD_BOUNDS = re.compile(r'[^${}\w:\-_/.]')
 
 
 def run_shellcheck(path: str) -> List[Dict]:
@@ -46,6 +47,39 @@ def log_line_cols(line: str, zero_based_cols: List[int]):
         logging.debug('Quoting words:\n%s%s', line, col_points)
 
 
+def pairwise(iterable):
+    "s -> (s0,s1), (s1,s2), (s2, s3), ..."
+    a, b = itertools.tee(iterable)
+    next(b, None)
+    return zip(a, b)
+
+
+def insert_quotes(s: str, positions: List[int]) -> str:
+    unique_ordered_positions = sorted(set(positions))
+    positions_with_start_end = [None, *unique_ordered_positions, None]
+    parts = [s[i:j] for i, j in pairwise(positions_with_start_end)]
+    return '"'.join(parts)
+
+
+def find_left_word_bound(s: str, i: int) -> int:
+    before_i = s[:i]
+    reversed_before_i = before_i[::-1]
+    before_match = WORD_BOUNDS.search(reversed_before_i)
+    return (i - before_match.start()) if before_match else None
+
+
+def find_right_word_bound(s: str, i: int) -> int:
+    after_i = s[i:]
+    after_match = WORD_BOUNDS.search(after_i)
+    return (i + after_match.start()) if after_match else None
+
+
+def find_word_bounds(s: str, i: int) -> Tuple[int, int]:
+    left = find_left_word_bound(s, i)
+    right = find_right_word_bound(s, i)
+    return (left, right)
+
+
 def quote_words_at_columns(line: str, cols: List[int]) -> str:
     """Returns the line with the word at col surrounded by double quotes.
 
@@ -56,37 +90,9 @@ def quote_words_at_columns(line: str, cols: List[int]) -> str:
     zero_based_cols = [col - 1 for col in cols]
     log_line_cols(line, zero_based_cols)
 
-    new_line = ''
-    remaining = line[:]
-    offset = 0
-    for col in zero_based_cols:
-        offset_col = col - offset
-
-        # Find left bound.
-        before_col = remaining[:offset_col]
-        reversed_before_col = before_col[::-1]
-        before_match = WORD_BOUNDS.search(reversed_before_col)
-        word_start_bound_index = ((offset_col - before_match.start())
-                                  if before_match else None)
-        before_word = remaining[:word_start_bound_index]
-
-        # Find right bound.
-        after_col = remaining[offset_col:]
-        after_match = WORD_BOUNDS.search(after_col)
-        word_end_bound_index = ((col + after_match.start())
-                                if after_match else None)
-        after_word = remaining[word_end_bound_index:]
-
-        # Quote word.
-        word = remaining[word_start_bound_index:word_end_bound_index]
-        quoted_word = '"{}"'.format(word)
-
-        new_line += before_word + quoted_word
-
-        remaining = after_word
-        offset += word_end_bound_index
-    new_line += remaining
-    return new_line
+    word_bounds = [find_word_bounds(line, col) for col in zero_based_cols]
+    indices = list(itertools.chain(*word_bounds))
+    return insert_quotes(line, indices)
 
 
 def rewrite_file_with_quotes(path: str, errs: Dict[int, List[int]]):
