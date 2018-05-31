@@ -12,7 +12,7 @@ from typing import Dict, Iterable, List, Tuple
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
-WORD_BOUNDS = re.compile(r'[^${}\w:\-*_/.]')
+WORD_BOUNDS = re.compile(r'[^${}\[\]\w:\-*_/.]')
 
 
 def run_shellcheck(path: str) -> List[Dict]:
