@@ -12,7 +12,7 @@ from typing import Dict, Iterable, List, Tuple
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
-WORD_BOUNDS = re.compile(r'[^${}\w:\-_/.]')
+WORD_BOUNDS = re.compile(r'[^${}\w:\-*_/.]')
 
 
 def run_shellcheck(path: str) -> List[Dict]:
@@ -65,13 +65,13 @@ def find_left_word_bound(s: str, i: int) -> int:
     before_i = s[:i]
     reversed_before_i = before_i[::-1]
     before_match = WORD_BOUNDS.search(reversed_before_i)
-    return (i - before_match.start()) if before_match else None
+    return (i - before_match.start()) if before_match else 0
 
 
 def find_right_word_bound(s: str, i: int) -> int:
     after_i = s[i:]
     after_match = WORD_BOUNDS.search(after_i)
-    return (i + after_match.start()) if after_match else None
+    return (i + after_match.start()) if after_match else len(s)
 
 
 def find_word_bounds(s: str, i: int) -> Tuple[int, int]:
