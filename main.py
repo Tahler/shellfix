@@ -11,6 +11,8 @@ from typing import Dict, Iterable, List, Tuple
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
+WORD_BOUNDS = re.compile(r'[^${}\w_/.]')
+
 
 def run_shellcheck(path: str) -> List[Dict]:
     proc = subprocess.run(
@@ -53,28 +55,36 @@ def quote_words_at_columns(line: str, cols: List[int]) -> str:
     """
     zero_based_cols = [col - 1 for col in cols]
     log_line_cols(line, zero_based_cols)
+
     new_line = ''
     remaining = line[:]
     offset = 0
     for col in zero_based_cols:
         offset_col = col - offset
+
+        # Find left bound.
         before_col = remaining[:offset_col]
+        reversed_before_col = before_col[::-1]
+        before_match = WORD_BOUNDS.search(reversed_before_col)
+        word_start_bound_index = ((offset_col - before_match.start())
+                                  if before_match else None)
+        before_word = remaining[:word_start_bound_index]
+
+        # Find right bound.
         after_col = remaining[offset_col:]
-        logging.debug('Inserting at col %s', col)
-        logging.debug('before_col: "%s"', before_col)
-        logging.debug('after_col: "%s"', after_col)
+        after_match = WORD_BOUNDS.search(after_col)
+        word_end_bound_index = ((col + after_match.start())
+                                if after_match else None)
+        after_word = remaining[word_end_bound_index:]
 
-        # Find next character which is not a letter, '$', '{', or '}'.
-        match = re.search(r'[^${}\w]', after_col)
-        word_end = match.start() if match else None
-        word = after_col[:word_end]
-        logging.debug('word: "%s"', word)
+        # Quote word.
+        word = remaining[word_start_bound_index:word_end_bound_index]
         quoted_word = '"{}"'.format(word)
-        new_line += before_col + quoted_word
 
-        remaining = after_col[word_end:]
-        # offset is the start of `after_col` in `line`.
-        offset = col + len(word)
+        new_line += before_word + quoted_word
+
+        remaining = after_word
+        offset += word_end_bound_index
     new_line += remaining
     return new_line
 
