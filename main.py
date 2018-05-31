@@ -62,11 +62,14 @@ def quote_words_at_columns(line: str, cols: List[int]) -> str:
         logging.debug('before_col: "%s"', before_col)
         logging.debug('after_col: "%s"', after_col)
 
+        # Find next character which is not a letter, '$', '{', or '}'.
+        word_end = re.search(r'[^${}\w]', after_col).start()
+        word = after_col[:word_end]
         logging.debug('word: "%s"', word)
         quoted_word = '"{}"'.format(word)
         new_line += before_col + quoted_word
 
-        remaining = after_col[next_space_index:]
+        remaining = after_col[word_end:]
     new_line += remaining
     return new_line
 
