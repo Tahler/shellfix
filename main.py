@@ -55,9 +55,11 @@ def quote_words_at_columns(line: str, cols: List[int]) -> str:
     log_line_cols(line, zero_based_cols)
     new_line = ''
     remaining = line[:]
+    offset = 0
     for col in zero_based_cols:
-        before_col = remaining[:col]
-        after_col = remaining[col:]
+        offset_col = col - offset
+        before_col = remaining[:offset_col]
+        after_col = remaining[offset_col:]
         logging.debug('Inserting at col %s', col)
         logging.debug('before_col: "%s"', before_col)
         logging.debug('after_col: "%s"', after_col)
@@ -70,6 +72,8 @@ def quote_words_at_columns(line: str, cols: List[int]) -> str:
         new_line += before_col + quoted_word
 
         remaining = after_col[word_end:]
+        # offset is the start of `after_col` in `line`.
+        offset = col + len(word)
     new_line += remaining
     return new_line
 
