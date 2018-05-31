@@ -1,9 +1,9 @@
-import fileinput
 import itertools
 import logging
 import re
-from typing import Dict, List, Tuple
+from typing import List, Tuple
 
+from . import rewrite
 from . import shellcheck
 
 WORD_BOUNDS = re.compile(r'[^${}\[\]\w:\-*_/.]')
@@ -68,17 +68,6 @@ def _quote_words_at_columns(line: str, cols: List[int]) -> str:
     return _insert_quotes(line, indices)
 
 
-def _rewrite_file_with_quotes(path: str, errs: Dict[int, List[int]]):
-    line_col_map = dict(errs)
-    with fileinput.input(files=(path, ), inplace=True) as f:
-        for i, line in enumerate(f):
-            line_num = i + 1
-            if line_num in line_col_map:
-                cols = line_col_map[line_num]
-                line = _quote_words_at_columns(line, cols)
-            print(line, end='')
-
-
 def fix(path: str):
     errs = shellcheck.run_for_error(path, 2086)
-    _rewrite_file_with_quotes(path, errs)
+    rewrite.by_line(path, errs, _quote_words_at_columns)
