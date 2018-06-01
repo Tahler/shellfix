@@ -1,8 +1,12 @@
-# SC2086 Fixer
+# Shellfix
 
-Quote shell expressions according to the
-[Shellcheck](https://github.com/koalaman/shellcheck) linter
-([SC2086](https://github.com/koalaman/shellcheck/wiki/SC2086)).
+Make shell scripts more robust by following advice from the
+[Shellcheck](https://github.com/koalaman/shellcheck) linter.
+
+Automatically fixes:
+
+- [SC2006](https://github.com/koalaman/shellcheck/wiki/SC2006)
+- [SC2086](https://github.com/koalaman/shellcheck/wiki/SC2086)
 
 ## Running
 
