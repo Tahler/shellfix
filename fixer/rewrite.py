@@ -1,6 +1,7 @@
 import fileinput
 from typing import Callable, Dict, List
 
+from . import ignore
 from . import shellcheck
 
 
@@ -20,3 +21,12 @@ def fix_rule_by_line(path: str, rule_code: int,
                      fix: Callable[[str, List[int]], str]):
     errs = shellcheck.run_for_error(path, rule_code)
     by_line(path, errs, fix)
+
+
+def fix_rule_by_ignore(path: str, rule_code: int):
+    errs = shellcheck.run_for_error(path, rule_code)
+
+    def add_ignore_directive_before_line(line: str, *unused_args) -> str:
+        return ignore.add_ignore_directive_before_line(rule_code, line)
+
+    by_line(path, errs, add_ignore_directive_before_line)
