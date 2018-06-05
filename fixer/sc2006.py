@@ -2,7 +2,7 @@ import re
 from typing import List
 
 from . import rewrite
-from . import shellcheck
+
 
 def _replace_backticks_with_shell_expansion(line: str, cols: List[int]) -> str:
     # TODO: Handle multiple columns by handling the split in chunks of 3.
@@ -14,5 +14,5 @@ def _replace_backticks_with_shell_expansion(line: str, cols: List[int]) -> str:
 
 
 def fix(path: str):
-    errs = shellcheck.run_for_error(path, 2006)
-    rewrite.by_line(path, errs, _replace_backticks_with_shell_expansion)
+    rewrite.fix_rule_by_line(path, 2006,
+                             _replace_backticks_with_shell_expansion)

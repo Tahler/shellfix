@@ -4,7 +4,6 @@ import re
 from typing import List, Tuple
 
 from . import rewrite
-from . import shellcheck
 
 WORD_BOUNDS = re.compile(r'[^${}\[\]\w:\-*_/.]')
 
@@ -69,5 +68,4 @@ def _quote_words_at_columns(line: str, cols: List[int]) -> str:
 
 
 def fix(path: str):
-    errs = shellcheck.run_for_error(path, 2086)
-    rewrite.by_line(path, errs, _quote_words_at_columns)
+    rewrite.fix_rule_by_line(path, 2086, _quote_words_at_columns)

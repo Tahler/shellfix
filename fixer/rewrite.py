@@ -1,6 +1,8 @@
 import fileinput
 from typing import Callable, Dict, List
 
+from . import shellcheck
+
 
 def by_line(path: str, locations: Dict[int, List[int]],
             fix: Callable[[str, List[int]], str]):
@@ -12,3 +14,9 @@ def by_line(path: str, locations: Dict[int, List[int]],
                 cols = line_col_map[line_num]
                 line = fix(line, cols)
             print(line, end='')
+
+
+def fix_rule_by_line(path: str, rule_code: int,
+                     fix: Callable[[str, List[int]], str]):
+    errs = shellcheck.run_for_error(path, rule_code)
+    by_line(path, errs, fix)
