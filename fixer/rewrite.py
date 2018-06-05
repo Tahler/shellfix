@@ -1,4 +1,5 @@
 import fileinput
+import logging
 from typing import Callable, Dict, List
 
 from . import ignore
@@ -13,7 +14,10 @@ def by_line(path: str, locations: Dict[int, List[int]],
             line_num = i + 1
             if line_num in line_col_map:
                 cols = line_col_map[line_num]
-                line = fix(line, cols)
+                try:
+                    line = fix(line, cols)
+                except Exception as e:
+                    logging.error(e)
             print(line, end='')
 
 
