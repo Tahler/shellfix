@@ -1,9 +1,24 @@
 import fileinput
+import itertools
 import logging
 from typing import Callable, Dict, List
 
 from . import ignore
 from . import shellcheck
+
+
+def _pairwise(iterable):
+    "s -> (s0,s1), (s1,s2), (s2, s3), ..."
+    a, b = itertools.tee(iterable)
+    next(b, None)
+    return zip(a, b)
+
+
+def insert(s: str, to_insert: str, positions: List[int]) -> str:
+    unique_ordered_positions = sorted(set(positions))
+    positions_with_start_end = [None, *unique_ordered_positions, None]
+    parts = [s[i:j] for i, j in _pairwise(positions_with_start_end)]
+    return to_insert.join(parts)
 
 
 def by_line(path: str, locations: Dict[int, List[int]],

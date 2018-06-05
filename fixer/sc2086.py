@@ -19,18 +19,8 @@ def _log_line_cols(line: str, zero_based_cols: List[int]):
         logging.debug('Quoting words:\n%s%s', line, col_points)
 
 
-def _pairwise(iterable):
-    "s -> (s0,s1), (s1,s2), (s2, s3), ..."
-    a, b = itertools.tee(iterable)
-    next(b, None)
-    return zip(a, b)
-
-
 def _insert_quotes(s: str, positions: List[int]) -> str:
-    unique_ordered_positions = sorted(set(positions))
-    positions_with_start_end = [None, *unique_ordered_positions, None]
-    parts = [s[i:j] for i, j in _pairwise(positions_with_start_end)]
-    return '"'.join(parts)
+    return rewrite.insert(s, '"', positions)
 
 
 def _find_left_word_bound(s: str, i: int) -> int:
