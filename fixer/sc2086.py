@@ -5,7 +5,7 @@ from typing import List, Tuple
 
 from . import rewrite
 
-WORD_BOUNDS = re.compile(r'[^${}\[\]\w:\-*_/.]')
+WORD_BOUNDS = re.compile(r'[^${}\[\]\+\w:\-*_/.]')
 
 
 def _log_line_cols(line: str, zero_based_cols: List[int]):
