@@ -11,6 +11,7 @@ from . import sc2046
 from . import sc2086
 from . import sc2155
 from . import sc2181
+from . import sc2206
 
 
 def fix_all(path: str):
@@ -24,6 +25,7 @@ def fix_all(path: str):
         sc2086,
         sc2155,
         sc2181,
+        sc2206,
     ]
     for fixer in fixers:
         try:
