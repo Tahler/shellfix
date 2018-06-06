@@ -1,8 +1,11 @@
 import logging
 import fileinput
+import re
 from typing import Callable, Dict, List
 
 from . import shellcheck
+
+_WHITESPACE_PATTERN = re.compile(r'^(\s*)')
 
 
 def fix(path: str):
@@ -22,7 +25,10 @@ def _rewrite_for_2181(path: str, locations: Dict[int, List[int]]):
                     logging.error('unsupported line: %s', line)
                 should_put_bang = '-ne 0' in line
                 bang = '! ' if should_put_bang else ''
-                line = 'if {}{}; then\n'.format(bang, prev_line)
+                match = _WHITESPACE_PATTERN.search(line)
+                leading_whitespace = match.group(1) if match else ''
+                line = '{}if {}{}; then\n'.format(leading_whitespace, bang,
+                                                  prev_line)
                 print(line, end='')
             elif next_line_num in line_col_map:
                 prev_line = line.strip()
