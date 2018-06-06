@@ -13,6 +13,7 @@ from . import sc2155
 from . import sc2164
 from . import sc2181
 from . import sc2206
+from . import sc2230
 
 
 def fix_all(path: str):
@@ -28,6 +29,7 @@ def fix_all(path: str):
         sc2164,
         sc2181,
         sc2206,
+        sc2230,
     ]
     for fixer in fixers:
         try:
